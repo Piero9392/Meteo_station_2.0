@@ -48,11 +48,13 @@ Additionally, it retrieves the current Time 🕖 and Date 📅 from the NTP serv
 ## Software
 The code for this project is written in C++ using the Arduino IDE.
 Key libraries include:
-* SPI: For LoRa communication
-* Adafruit_GFX, Adafruit_SSD1306: For the TFT display
+* SPI: For LoRa and TFT-display communication
+* BSEC: Provides support for the Bosch BME680 sensor
+* LoRa: Enables communication with LoRa (Long Range) transceivers
 * WiFi, WiFiClient: For Wi-Fi connectivity on the ESP32
-* Time: For NTP-based time synchronization
 * BlynkSimpleEsp32: For integrating Blynk with ESP32
+* AdafruitILI9341, AdafruitGFX: To control ILI9341-based TFT display
+* Time: For NTP-based time synchronization
 
 ## Wiring and Communication Protocols
 
