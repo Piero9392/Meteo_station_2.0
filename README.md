@@ -15,7 +15,7 @@ This LoRa-based wireless weather station monitors a wide range of environmental 
 
 The station consists of two LoRa-equipped devices, a Sender and a Receiver, both utilizing the BME680 sensor. The Sender measures environmental parameters and transmits the data over LoRa to the Receiver, which can be positioned several kilometers away. This setup is suitable for applications like monitoring indoor and outdoor environments around your home.
 
-![Alt text](images/)
+![Alt text](images/general_view.jpg)
 
 ## Data Display and Monitoring
 
@@ -25,8 +25,7 @@ The Receiver provides multiple options for data visualization:
 
 Additionally, it retrieves the current Time 🕖 and Date 📅 from the NTP server at NTP Pool.
 
-![Alt text](images/)
-![Alt text](images/)
+![Alt text](images/thingspeak_web.jpg)
 ![Alt text](images/)
 
 ## Hardware Components
@@ -42,9 +41,9 @@ Additionally, it retrieves the current Time 🕖 and Date 📅 from the NTP serv
   * 📡LoRa: Ra-02 SX1278 (433MHz)
   * 🖥️Display: ILI9341 TFT 2.4-inch screen
  
-![Alt text](images/)
-![Alt text](images/)
-![Alt text](images/)
+![Alt text](images/receiver_out.jpg)
+![Alt text](images/receiver_in.jpg)
+![Alt text](images/sender.jpg)
 
 ## Software
 The code for this project is written in C++ using the Arduino IDE.
@@ -110,5 +109,5 @@ The station uses SPI and I2C protocols for communication with the components:
   * SDA: GPIO 21
   * SCL: GPIO 22
 
-## Author
+### Author
 Igor Kolesnykov
