@@ -12,11 +12,12 @@ SDA:   GPIO 21
 SCL:   GPIO 22
 */
 
+// Include necessary libraries
 #include "bsec.h"  // Include the BME680 sensor library
 #include <SPI.h>   // Include the SPI library for LoRa
 #include <LoRa.h>  // Include the LoRa library
 
-// Pin definitions for LoRa module
+// Pin LoRa configurations
 #define SCK 18
 #define MISO 19
 #define MOSI 23
@@ -33,7 +34,7 @@ SCL:   GPIO 22
 #define SYNC_WORD 0x6E // Set custom sync word
 #define TX_POWER 20 // Set maximum transmission power in dBm (Ra-02 supports up to 20dBm)
 
-// Pin definitions for BME680 sensor
+// Pin configurations for BME680
 #define SDA 21
 #define SCL 22
 #define BME680_ADDRESS 0X77
@@ -45,23 +46,7 @@ String LoRaMessage = ""; // String to store LoRa message
 unsigned long previousMillis = 0;
 const long intervalDataSend = 1000;
 
-void setup() {
-  Serial.begin(115200); // Initialize serial communication
-  Wire.begin(SDA, SCL); // Initialize I2C communication for BME680
-  SPI.begin(SCK, MISO, MOSI, SS); // Initialize SPI communication for LoRa
-  iaqSensor.begin(BME680_ADDRESS, Wire); // Initialize BME680 sensor
-  startLora(); // Initialize LoRa communication
-  bsecVirtualSensor(); // Configure BME680 virtual sensors
-}
-
-void loop() {
-  unsigned long currentMillis = millis();
-  if (currentMillis - previousMillis >= intervalDataSend) {
-    previousMillis = currentMillis;
-    sendDataLora(); // Transmit data via LoRa periodically
-  }
-}
-
+// Function to initialize BSEC virtual sensors
 void bsecVirtualSensor() {
   // Configure BME680 virtual sensors
   bsec_virtual_sensor_t sensorList[10] = {
@@ -77,6 +62,28 @@ void bsecVirtualSensor() {
     BSEC_OUTPUT_SENSOR_HEAT_COMPENSATED_HUMIDITY,
   };
   iaqSensor.updateSubscription(sensorList, 10, BSEC_SAMPLE_RATE_LP); // Update sensor subscription
+}
+
+// Function to calculate dew point
+double dewPointFunction(double celsius, double humidityOut)  {
+  double a = 17.271;
+  double b = 237.7;
+  double temp = (a * celsius) / (b + celsius) + log(humidityOut * 0.01);
+  double Td = (b * temp) / (a - temp);
+  return Td;
+}
+
+// Function to calculate altitude
+double altitudeFunction(double pressureOut)  {
+  double t = 288.15; // Standard temperature at sea level (T0)
+  double l = 0.0065; // Temperature lapse rate (L)
+  double p = 1013.25; // Pressure at sea level (P0)
+  double r = 8.314462618; // Universal gas constant (R)
+  double g = 9.80665; // Acceleration due to gravity (G)
+  double m = 0.0289644; // Molar mass of Earth's air (M0)
+  double res = pow((pressureOut / p), ((r * l) / (g * m)));
+  double Alt = t / l * (1-res);
+  return Alt;
 }
 
 // Function to initialize LoRa communication
@@ -99,6 +106,7 @@ void startLora() {
   Serial.println("LoRa initializing OK");
 }
 
+// Function to send data via LoRa module
 void sendDataLora() {
   if (iaqSensor.run()) { // Read sensor data
     // Get sensor data
@@ -151,24 +159,19 @@ void sendDataLora() {
   }
 }
 
-// Function to calculate dew point
-double dewPointFunction(double celsius, double humidityOut)  {
-  double a = 17.271;
-  double b = 237.7;
-  double temp = (a * celsius) / (b + celsius) + log(humidityOut * 0.01);
-  double Td = (b * temp) / (a - temp);
-  return Td;
+void setup() {
+  Serial.begin(115200); // Initialize serial communication
+  Wire.begin(SDA, SCL); // Initialize I2C communication for BME680
+  SPI.begin(SCK, MISO, MOSI, SS); // Initialize SPI communication for LoRa
+  iaqSensor.begin(BME680_ADDRESS, Wire); // Initialize BME680 sensor
+  startLora(); // Initialize LoRa communication
+  bsecVirtualSensor(); // Configure BME680 virtual sensors
 }
 
-// Function to calculate altitude
-double altitudeFunction(double pressureOut)  {
-  double t = 288.15; // Standard temperature at sea level (T0)
-  double l = 0.0065; // Temperature lapse rate (L)
-  double p = 1013.25; // Pressure at sea level (P0)
-  double r = 8.314462618; // Universal gas constant (R)
-  double g = 9.80665; // Acceleration due to gravity (G)
-  double m = 0.0289644; // Molar mass of Earth's air (M0)
-  double res = pow((pressureOut / p), ((r * l) / (g * m)));
-  double Alt = t / l * (1-res);
-  return Alt;
+void loop() {
+  unsigned long currentMillis = millis();
+  if (currentMillis - previousMillis >= intervalDataSend) {
+    previousMillis = currentMillis;
+    sendDataLora(); // Transmit data via LoRa periodically
+  }
 }
