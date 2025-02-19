@@ -91,28 +91,6 @@ int co2Out;
 float vocOut;
 int altitudeOut;
 
-int lastTemperatureOut = -999;
-int lastHumidityOut = -999;
-int lastPressureOut = -999;
-int lastDewPointOut = -999;
-int lastGasOut = -999;
-int lastIaqOut = -999;
-int lastCo2Out = -999;
-float lastVocOut = -999;
-int lastAltitudeOut = -999;
-
-int lastTemperatureIn = -999;
-int lastHumidityIn = -999;
-int lastPressureIn = -999;
-int lastDewPointIn = -999;
-int lastGasIn = -999;
-int lastIaqIn = -999;
-int lastCo2In = -999;
-float lastVocIn = -999;
-int lastAltitudeIn = -999;
-
-int lastLoraRssi = -999;
-
 // Define variables to store sensor data indices
 int temperatureIndex;
 int humidityIndex;
@@ -279,36 +257,6 @@ void startTft() {
   titleGrid();
 }
 
-// Setup function
-void setup() {
-  // Initialize serial communication
-  Serial.begin(115200);
-
-  // Initialize I2C for BME680 sensor
-  Wire.begin(SDA, SCL);
-
-  // Initialize SPI for TFT display
-  SPI.begin(SCK, MISO, MOSI, SS);
-
-  // Initialize BME680 sensor
-  iaqSensor.begin(BME680_ADDRESS, Wire);
-
-  // Configure BSEC library for BME680 sensor
-  bsecVirtualSensor();
-
-  // Initialize LoRa communication
-  startLora();
-
-  // Connect to one of available WiFi network and Blynk.Cloud
-  startWifi();
-
-  // Configure NTP server
-  configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
-
-  // Start TFT display
-  startTft();
-}
-
 // Function to calculate dew point
 double dewPointInFunction(double celsius, double humidityIn) {
   double a = 17.271;
@@ -432,225 +380,168 @@ void sendSensorOutDataToThingspeak() {
 
 void printTemperatureInToTft() {
   int temperatureIn = iaqSensor.temperature;
-  if (temperatureIn != lastTemperatureIn) {  // Update only if changed
-    lastTemperatureIn = temperatureIn;
-    tft.fillRect(131, 22, 94, 20, backgroundColor);
-    tft.setCursor(135, 36);
-    tft.setTextColor(textColorTemperature);
-    tft.print(temperatureIn);
-    tft.print("C");
-  }
+  tft.fillRect(131, 22, 94, 20, backgroundColor);
+  tft.setCursor(135, 36);
+  tft.setTextColor(textColorTemperature);
+  tft.print(temperatureIn);
+  tft.print("C");
 }
 
 void printHumidityInToTft() {
   int humidityIn = iaqSensor.humidity;
-  if (humidityIn != lastHumidityIn) {  // Update only if changed
-    lastHumidityIn = humidityIn;
-    tft.fillRect(131, 44, 94, 20, backgroundColor);
-    tft.setCursor(135, 58);
-    tft.setTextColor(textColorHumidity);
-    tft.print(humidityIn);
-    tft.print("%");
-  }
+  tft.fillRect(131, 44, 94, 20, backgroundColor);
+  tft.setCursor(135, 58);
+  tft.setTextColor(textColorHumidity);
+  tft.print(humidityIn);
+  tft.print("%");
 }
 
 void printPressureInToTft() {
   int pressureIn = iaqSensor.pressure / 100;
-  if (pressureIn != lastPressureIn) {  // Update only if changed
-    lastPressureIn = pressureIn;
-    tft.fillRect(131, 66, 94, 20, backgroundColor);
-    tft.setCursor(135, 80);
-    tft.setTextColor(textColorPressure);
-    tft.print(pressureIn);
-    tft.print("hPa");
-  }
+  tft.fillRect(131, 66, 94, 20, backgroundColor);
+  tft.setCursor(135, 80);
+  tft.setTextColor(textColorPressure);
+  tft.print(pressureIn);
+  tft.print("hPa");
 }
 
 void printDewPointInToTft() {
   int temperatureIn = iaqSensor.temperature;
   int humidityIn = iaqSensor.humidity;
   int dewPointIn = dewPointInFunction(temperatureIn, humidityIn);
-  if (dewPointIn != lastDewPointIn) {  // Update only if changed
-    lastDewPointIn = dewPointIn;
-    tft.fillRect(131, 88, 94, 20, backgroundColor);
-    tft.setCursor(135, 102);
-    tft.setTextColor(textColor);
-    tft.print(dewPointIn);
-    tft.print("C");
-  }
+  tft.fillRect(131, 88, 94, 20, backgroundColor);
+  tft.setCursor(135, 102);
+  tft.setTextColor(textColor);
+  tft.print(dewPointIn);
+  tft.print("C");
 }
 
 void printGasInToTft() {
   int gasIn = iaqSensor.gasResistance / 1000;
-  if (gasIn != lastGasIn) {  // Update only if changed
-    lastGasIn = gasIn;
-    tft.fillRect(131, 110, 94, 20, backgroundColor);
-    tft.setCursor(135, 124);
-    tft.setTextColor(textColor);
-    tft.print(gasIn);
-    tft.print("kOhm");
-  }
+  tft.fillRect(131, 110, 94, 20, backgroundColor);
+  tft.setCursor(135, 124);
+  tft.setTextColor(textColor);
+  tft.print(gasIn);
+  tft.print("kOhm");
 }
 
 void printIaqInToTft() {
   int iaqIn = iaqSensor.iaq;
-  if (iaqIn != lastIaqIn) {  // Update only if changed
-    lastIaqIn = iaqIn;
-    tft.fillRect(131, 132, 94, 20, backgroundColor);
-    tft.setCursor(135, 146);
-    tft.setTextColor(textColorIaq);
-    tft.print(iaqIn);
-  }
+  tft.fillRect(131, 132, 94, 20, backgroundColor);
+  tft.setCursor(135, 146);
+  tft.setTextColor(textColorIaq);
+  tft.print(iaqIn);
 }
 
 void printCo2InToTft() {
   int co2In = iaqSensor.co2Equivalent;
-  if (co2In != lastCo2In) {  // Update only if changed
-    lastCo2In = co2In;
-    tft.fillRect(131, 154, 94, 20, backgroundColor);
-    tft.setCursor(135, 168);
-    tft.setTextColor(textColorCo2);
-    tft.print(co2In);
-    tft.print("ppm");
-  }
+  tft.fillRect(131, 154, 94, 20, backgroundColor);
+  tft.setCursor(135, 168);
+  tft.setTextColor(textColorCo2);
+  tft.print(co2In);
+  tft.print("ppm");
 }
 
 void printVocInToTft() {
   float vocIn = iaqSensor.breathVocEquivalent;
-  if (vocIn != lastVocIn) {  // Update only if changed
-    lastVocIn = vocIn;
-    tft.fillRect(131, 176, 94, 20, backgroundColor);
-    tft.setCursor(135, 190);
-    tft.setTextColor(textColorVoc);
-    tft.print(vocIn);
-    tft.print("ppm");
-  }
+  tft.fillRect(131, 176, 94, 20, backgroundColor);
+  tft.setCursor(135, 190);
+  tft.setTextColor(textColorVoc);
+  tft.print(vocIn);
+  tft.print("ppm");
 }
 
 void printAltitudeInToTft() {
   int pressureIn = iaqSensor.pressure / 100;
   int altitudeIn = altitudeInFunction(pressureIn);
-  if (altitudeIn != lastAltitudeIn) {  // Update only if changed
-    lastAltitudeIn = altitudeIn;
-    tft.fillRect(131, 198, 94, 20, backgroundColor);
-    tft.setCursor(135, 212);
-    tft.setTextColor(textColor);
-    tft.print(altitudeIn);
-    tft.print("m");
-  }
+  tft.fillRect(131, 198, 94, 20, backgroundColor);
+  tft.setCursor(135, 212);
+  tft.setTextColor(textColor);
+  tft.print(altitudeIn);
+  tft.print("m");
 }
 
 void printTemperatureOutToTft() {
-  if (temperatureOut != lastTemperatureOut) {  // Update only if changed
-    lastTemperatureOut = temperatureOut;
-    tft.fillRect(226, 22, 93, 20, backgroundColor);
-    tft.setCursor(230, 36);
-    tft.setTextColor(textColorTemperature);
-    tft.print(temperatureOut);
-    tft.print("C");
-  }
+  tft.fillRect(226, 22, 93, 20, backgroundColor);
+  tft.setCursor(230, 36);
+  tft.setTextColor(textColorTemperature);
+  tft.print(temperatureOut);
+  tft.print("C");
 }
 
 void printHumidityOutToTft() {
-  if (humidityOut != lastHumidityOut) {  // Update only if changed
-    lastHumidityOut = humidityOut;
-    tft.fillRect(226, 44, 93, 20, backgroundColor);
-    tft.setCursor(230, 58);
-    tft.setTextColor(textColorHumidity);
-    tft.print(humidityOut);
-    tft.print("%");
-  }
+  tft.fillRect(226, 44, 93, 20, backgroundColor);
+  tft.setCursor(230, 58);
+  tft.setTextColor(textColorHumidity);
+  tft.print(humidityOut);
+  tft.print("%");
 }
 
 void printPressureOutToTft() {
-  if (pressureOut != lastPressureOut) {  // Update only if changed
-    lastPressureOut = pressureOut;
-    tft.fillRect(226, 66, 93, 20, backgroundColor);
-    tft.setCursor(230, 80);
-    tft.setTextColor(textColorPressure);
-    tft.print(pressureOut);
-    tft.print("hPa");
-  }
+  tft.fillRect(226, 66, 93, 20, backgroundColor);
+  tft.setCursor(230, 80);
+  tft.setTextColor(textColorPressure);
+  tft.print(pressureOut);
+  tft.print("hPa");
 }
 
 void printDewPointOutToTft() {
-  if (dewPointOut != lastDewPointOut) {  // Update only if changed
-    lastDewPointOut = dewPointOut;
     tft.fillRect(226, 88, 93, 20, backgroundColor);
     tft.setCursor(230, 102);
     tft.setTextColor(textColor);
     tft.print(dewPointOut);
     tft.print("C");
-  }
 }
 
 void printGasOutToTft() {
-  if (gasOut != lastGasOut) {  // Update only if changed
-    lastGasOut = gasOut;
     tft.fillRect(226, 110, 93, 20, backgroundColor);
     tft.setCursor(230, 124);
     tft.setTextColor(textColor);
     tft.print(gasOut);
     tft.print("kOhm");
-  }
 }
 
 void printIaqOutToTft() {
-  if (iaqOut != lastIaqOut) {  // Update only if changed
-    lastIaqOut = iaqOut;
     tft.fillRect(226, 132, 93, 20, backgroundColor);
     tft.setCursor(230, 146);
     tft.setTextColor(textColorIaq);
     tft.print(iaqOut);
-  }
 }
 
 void printCo2OutToTft() {
-  if (co2Out != lastCo2Out) {  // Update only if changed
-    lastCo2Out = co2Out;
-    tft.fillRect(226, 154, 93, 20, backgroundColor);
-    tft.setCursor(230, 168);
-    tft.setTextColor(textColorCo2);
-    tft.print(co2Out);
-    tft.print("ppm");
-  }
+  tft.fillRect(226, 154, 93, 20, backgroundColor);
+  tft.setCursor(230, 168);
+  tft.setTextColor(textColorCo2);
+  tft.print(co2Out);
+  tft.print("ppm");
 }
 
 void printVocOutToTft() {
-  if (vocOut != lastVocOut) {  // Update only if changed
-    lastVocOut = vocOut;
-    tft.fillRect(226, 176, 93, 20, backgroundColor);
-    tft.setCursor(230, 190);
-    tft.setTextColor(textColorVoc);
-    tft.print(vocOut);
-    tft.print("ppm");
-  }
+  tft.fillRect(226, 176, 93, 20, backgroundColor);
+  tft.setCursor(230, 190);
+  tft.setTextColor(textColorVoc);
+  tft.print(vocOut);
+  tft.print("ppm");
 }
 
 void printAltitudeOutToTft() {
-  if (altitudeOut != lastAltitudeOut) {  // Update only if changed
-    lastAltitudeOut = altitudeOut;
-    tft.fillRect(226, 198, 93, 20, backgroundColor);
-    tft.setCursor(230, 212);
-    tft.setTextColor(textColor);
-    tft.print(altitudeOut);
-    tft.print("m");
-  }
+  tft.fillRect(226, 198, 93, 20, backgroundColor);
+  tft.setCursor(230, 212);
+  tft.setTextColor(textColor);
+  tft.print(altitudeOut);
+  tft.print("m");
 }
 
 void printRssiLevelToTft() {
   int loraRssi = LoRa.packetRssi();
-  if (loraRssi != lastLoraRssi) {  // Update only if changed
-    lastLoraRssi = loraRssi;
-    tft.fillRect(1, 1, 129, 19, backgroundColor);
-    tft.setCursor(5, 14);
-    tft.setTextColor(gridColor);
-    tft.print("RSSI");
-    tft.setCursor(60, 14);
-    tft.setTextColor(textColor);
-    tft.print(loraRssi);
-    tft.print("dB");
-  }
+  tft.fillRect(1, 1, 129, 19, backgroundColor);
+  tft.setCursor(5, 14);
+  tft.setTextColor(gridColor);
+  tft.print("RSSI");
+  tft.setCursor(60, 14);
+  tft.setTextColor(textColor);
+  tft.print(loraRssi);
+  tft.print("dB");
 }
 
 // Function to print data from sensor Inside to Serial monitor
@@ -928,6 +819,36 @@ void sensorOutData() {
   if (currentMillis - previousMillis >= receiveTimeout) {
     clearTftIfNoDataSensorOut();
   }
+}
+
+// Setup function
+void setup() {
+  // Initialize serial communication
+  Serial.begin(115200);
+
+  // Initialize I2C for BME680 sensor
+  Wire.begin(SDA, SCL);
+
+  // Initialize SPI for TFT display
+  SPI.begin(SCK, MISO, MOSI, SS);
+
+  // Initialize BME680 sensor
+  iaqSensor.begin(BME680_ADDRESS, Wire);
+
+  // Configure BSEC library for BME680 sensor
+  bsecVirtualSensor();
+
+  // Initialize LoRa communication
+  startLora();
+
+  // Connect to one of available WiFi network and Blynk.Cloud
+  startWifi();
+
+  // Configure NTP server
+  configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
+
+  // Start TFT display
+  startTft();
 }
 
 // Loop function
