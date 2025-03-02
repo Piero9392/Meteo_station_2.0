@@ -90,7 +90,7 @@ The station uses SPI and I2C protocols for communication with the components:
   * MOSI: GPIO 23
   * MISO: GPIO 19
   * SCK: GPIO 18
-  * NSS: GPIO 5
+  * NSS: GPIO 25
   * RESET: GPIO 14
   * DIO0: GPIO 2
   * VCC: 3.3V
