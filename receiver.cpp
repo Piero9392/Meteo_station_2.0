@@ -13,7 +13,7 @@ LoRa Ra-02 wiring:
 MOSI:  GPIO 23
 MISO:  GPIO 19
 SCK:   GPIO 18
-NSS:   GPIO 5
+NSS:   GPIO 25
 RESET: GPIO 14
 D100:  GPIO 2
 
@@ -47,7 +47,7 @@ SCL:   GPIO 22
 #define SCK 18
 #define MISO 19
 #define MOSI 23
-#define SS 5
+#define SS 25
 #define RST 14
 #define DI0 2
 
