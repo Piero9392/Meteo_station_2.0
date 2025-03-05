@@ -5,21 +5,27 @@ MISO:  GPIO 19
 SCK:   GPIO 18
 CS:    GPIO 15
 RESET: GPIO 4
-DC:    GPIO 32
-LED:   GPIO VCC
-VCC:   GPIO VCC
+DC:    GPIO 27
+LED:   +5V
+VCC:   +5V
+GND:   Ground
 
 LoRa Ra-02 wiring:
 MOSI:  GPIO 23
 MISO:  GPIO 19
 SCK:   GPIO 18
-NSS:   GPIO 25
+NSS:   GPIO 13
 RESET: GPIO 14
 D100:  GPIO 2
+VCC:   +3.3V
+GND:   Ground
+
 
 BME680 sensor wiring:
 SDA:   GPIO 21
 SCL:   GPIO 22
+VCC:   +3.3V
+GND:   Ground
 */
 
 // Include necessary libraries
@@ -252,7 +258,7 @@ void titleGrid() {
 // Function to initialize TFT display
 void startTft() {
   tft.begin();
-  tft.setRotation(3);
+  tft.setRotation(1);
   grid();
   titleGrid();
 }
