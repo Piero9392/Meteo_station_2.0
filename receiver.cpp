@@ -3,7 +3,7 @@ ILI9341 TFT Display wiring:
 MOSI:  GPIO 23
 MISO:  GPIO 19
 SCK:   GPIO 18
-CS:    GPIO 15
+CS:    GPIO 5
 RESET: GPIO 4
 DC:    GPIO 27
 LED:   +5V
