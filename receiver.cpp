@@ -16,7 +16,7 @@ MISO:  GPIO 19
 SCK:   GPIO 18
 NSS:   GPIO 13
 RESET: GPIO 14
-D100:  GPIO 2
+DIO0:  GPIO 2
 VCC:   +3.3V
 GND:   Ground
 
@@ -45,15 +45,15 @@ GND:   Ground
 #include <BlynkSimpleEsp32.h>
 
 // Pin TFT display configurations
-#define TFT_CS 15
+#define TFT_CS 5
 #define TFT_RST 4
-#define TFT_DC 32
+#define TFT_DC 27
 
 // Pin LoRa configurations
 #define SCK 18
 #define MISO 19
 #define MOSI 23
-#define SS 25
+#define SS 13
 #define RST 14
 #define DI0 2
 
