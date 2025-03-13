@@ -110,6 +110,7 @@ uint16_t gridColor = ILI9341_GREEN;
 uint16_t backgroundColor = ILI9341_BLACK;
 uint16_t textColor = ILI9341_WHITE;
 uint16_t wifiAlertColor = ILI9341_RED;
+uint16_t gitTextColor = ILI9341_YELLOW;
 uint16_t textColorTemperature;
 uint16_t textColorHumidity;
 uint16_t textColorPressure;
@@ -140,7 +141,7 @@ String apiKey = "UHID1B0LDCF1AWNU";
 
 // Define NTP server and time settings
 const char* ntpServer = "pool.ntp.org";
-const long gmtOffset_sec = 7200;
+const long gmtOffset_sec = 3600;
 const int daylightOffset_sec = 3600;
 
 // Define timing variables
@@ -148,6 +149,7 @@ unsigned long previousMillis = 0;
 const unsigned long receiveTimeout = 10000;
 unsigned long lastTFTUpdateTime = 0;
 const long intervalTimeUpdate = 5000;
+const long titleTime = 5000;
 
 // Function to initialize BSEC virtual sensors
 void bsecVirtualSensor() {
@@ -255,10 +257,34 @@ void titleGrid() {
   tft.print("Altitude");
 }
 
+// Center the Title text on the TFT
+void drawCenteredText(const char *text, int y, uint16_t color, int textSize) {
+  int16_t x1, y1;
+  uint16_t w, h;
+  tft.setTextSize(textSize);
+  tft.setTextColor(color);
+  tft.getTextBounds(text, 0, y, &x1, &y1, &w, &h);
+  tft.setCursor((tft.width() - w) / 2, y);
+  tft.print(text);
+}
+
+// Display title content
+void titleTFT() {
+  tft.setFont(mainFont);
+  tft.fillScreen(ILI9341_BLACK);
+  drawCenteredText("Meteo Station", 110, gridColor, 2);
+  drawCenteredText("ESP32/BME680/LoRa433MHz", 140, textColor, 1);
+  tft.setFont();
+  drawCenteredText("github.com/Piero9392/Meteo_station_2.0", 220, gitTextColor, 1);
+  delay(titleTime);
+  tft.fillScreen(ILI9341_BLACK);
+}
+
 // Function to initialize TFT display
 void startTft() {
   tft.begin();
   tft.setRotation(1);
+  titleTFT();
   grid();
   titleGrid();
 }
@@ -840,6 +866,9 @@ void setup() {
 
   // Initialize BME680 sensor
   iaqSensor.begin(BME680_ADDRESS, Wire);
+  
+  // Start TFT display
+  startTft();
 
   // Configure BSEC library for BME680 sensor
   bsecVirtualSensor();
@@ -852,9 +881,6 @@ void setup() {
 
   // Configure NTP server
   configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
-
-  // Start TFT display
-  startTft();
 }
 
 // Loop function
