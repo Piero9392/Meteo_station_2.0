@@ -149,7 +149,7 @@ unsigned long previousMillis = 0;
 const unsigned long receiveTimeout = 10000;
 unsigned long lastTFTUpdateTime = 0;
 const long intervalTimeUpdate = 5000;
-const long titleTime = 5000;
+const long titleTime = 3000;
 
 // Function to initialize BSEC virtual sensors
 void bsecVirtualSensor() {
@@ -866,9 +866,6 @@ void setup() {
 
   // Initialize BME680 sensor
   iaqSensor.begin(BME680_ADDRESS, Wire);
-  
-  // Start TFT display
-  startTft();
 
   // Configure BSEC library for BME680 sensor
   bsecVirtualSensor();
@@ -881,6 +878,9 @@ void setup() {
 
   // Configure NTP server
   configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
+
+  // Start TFT display
+  startTft();
 }
 
 // Loop function
