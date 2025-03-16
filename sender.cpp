@@ -3,13 +3,17 @@ LoRa Ra-02 wiring:
 MOSI:  GPIO 23
 MISO:  GPIO 19
 SCK:   GPIO 18
-NSS:   GPIO 5
+NSS:   GPIO 13
 RESET: GPIO 14
-D100:  GPIO 2
+DIO0:  GPIO 2
+VCC:   +3.3V
+GND:   Ground
 
 BME680 sensor wiring:
 SDA:   GPIO 21
 SCL:   GPIO 22
+VCC:   +3.3V
+GND:   Ground
 */
 
 // Include necessary libraries
@@ -21,7 +25,7 @@ SCL:   GPIO 22
 #define SCK 18
 #define MISO 19
 #define MOSI 23
-#define SS 5
+#define SS 13
 #define RST 14
 #define DI0 2
 
