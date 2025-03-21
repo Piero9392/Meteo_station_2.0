@@ -27,7 +27,7 @@ The Receiver provides multiple options for data visualization:
 
 Additionally, it retrieves the current Time 🕖 and Date 📅 from the NTP server at NTP Pool.
 
-![Alt text](images/thingspeak_web.jpg)
+![Alt text](images/thingspeak_web.jpeg)
 ![Alt text](images/blynkcloud_web.jpg)
 
 ## Hardware Components
