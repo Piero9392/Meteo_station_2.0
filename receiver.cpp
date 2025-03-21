@@ -121,13 +121,13 @@ uint16_t textColorVoc;
 // Define font for TFT display
 const GFXfont* mainFont = &FreeMono9pt7b;
 
-// Define WiFi credentials
-const char* ssid1 = "TP-Link_1FAA";
-const char* password1 = "10458327";
-const char* ssid2 = "AquaPex";
-const char* password2 = "aqua13579";
-const char* ssid3 = "Huspi";
-const char* password3 = "0503949524";
+// Define WiFi credentials (add your WiFi ssid and password)
+const char* ssid1 = "";
+const char* password1 = "";
+const char* ssid2 = "";
+const char* password2 = "";
+const char* ssid3 = "";
+const char* password3 = "";
 
 // Define Blynk authentication token
 char auth[] = BLYNK_AUTH_TOKEN;
