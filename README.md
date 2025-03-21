@@ -129,5 +129,8 @@ The station uses SPI and I2C protocols for communication with the components:
   * VCC: +3.3V
   * GND: Ground
 
+## 3D Printable Case
+This project includes **3D files for printing** a custom case and lid for protection and easy mounting.
+
 ### Author
 Igor Kolesnykov
