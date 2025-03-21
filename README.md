@@ -33,15 +33,22 @@ Additionally, it retrieves the current Time 🕖 and Date 📅 from the NTP serv
 ## Hardware Components
 
 * Sender 📡:
-  * 🛠Microcontroller: ESP32 WROOM DA
+  * 🛠Microcontroller: ESP32 WROOM DA (30 Pins)
   * 🗼Sensor: BME680
   * 📡LoRa: Ra-02 SX1278 (433MHz)
+  * DC-DC converter MP1584
+  * PCB 60x40mm
+  * Capacitor 100mkF
 
 * Receiver 🖥
   * 🛠Microcontroller: ESP32 WROOM DA
   * 🗼Sensor: BME680
   * 📡LoRa: Ra-02 SX1278 (433MHz)
   * 🖥️Display: ILI9341 TFT 2.4-inch screen
+  * DC-DC converter MP1584
+  * PCB 60x40mm
+  * Capacitor 100mkF
+  * Switch button
  
 ![Alt text](images/receiver_out.jpeg)
 ![Alt text](images/receiver_in.jpeg)
