@@ -1,4 +1,6 @@
 # LoRa-Based Wireless Weather Station 📡📶
+
+ ![Alt text](images/start_image.jpg)
  
 ## Project Overview
 
@@ -43,7 +45,6 @@ Additionally, it retrieves the current Time 🕖 and Date 📅 from the NTP serv
  
 ![Alt text](images/receiver_out.jpg)
 ![Alt text](images/receiver_in.jpg)
-![Alt text](images/sender.jpg)
 
 ## Software
 The code for this project is written in C++ using the Arduino IDE.
@@ -71,45 +72,49 @@ The station uses SPI and I2C protocols for communication with the components:
 
 ### Pin Connections
 #### Sender:
-  * 📡 LoRa Module (SX1278):
-    * MOSI: GPIO 23
-    * MISO: GPIO 19
-    * SCK: GPIO 18
-    * NSS: GPIO 5
-    * RESET: GPIO 14
-    * DIO0: GPIO 2
-    * VCC: 3.3V
-    * GND: Ground
+ * 📡 LoRa Module (SX1278):
+   * MOSI: GPIO 23
+   * MISO: GPIO 19
+   * SCK: GPIO 18
+   * NSS: GPIO 13
+   * RESET: GPIO 14
+   * DIO0: GPIO 2
+   * VCC: +3.3V
+   * GND: Ground
 
-  * 🗼 BME680 Sensor:
-    * SDA: GPIO 21
-    * SCL: GPIO 22
+ * 🗼BME680 Sensor:
+   * SDA: GPIO 21
+   * SCL: GPIO 22
+   * VCC: +3.3V
+   * GND: Ground
 
 #### Receiver:
 * 📡 LoRa Module (SX1278):
   * MOSI: GPIO 23
   * MISO: GPIO 19
   * SCK: GPIO 18
-  * NSS: GPIO 25
+  * NSS: GPIO 13
   * RESET: GPIO 14
   * DIO0: GPIO 2
-  * VCC: 3.3V
+  * VCC: +3.3V
   * GND: Ground
 
 * 🖥 TFT Display (ILI9341):
   * MOSI: GPIO 23
   * MISO: GPIO 19
   * SCK: GPIO 18
-  * CS: GPIO 15
+  * CS: GPIO 5
   * RESET: GPIO 4
-  * DC: GPIO 32
-  * LED: VCC
-  * VCC: 3.3V
+  * DC: GPIO 27
+  * LED: +5V
+  * VCC: +5V
   * GND: Ground
 
 * 🗼BME680 Sensor:
   * SDA: GPIO 21
   * SCL: GPIO 22
+  * VCC: +3.3V
+  * GND: Ground
 
 ### Author
 Igor Kolesnykov
