@@ -141,7 +141,7 @@ String apiKey = "UHID1B0LDCF1AWNU";
 
 // Define NTP server and time settings
 const char* ntpServer = "pool.ntp.org";
-const long gmtOffset_sec = 3600;
+const long gmtOffset_sec = 7200;
 const int daylightOffset_sec = 3600;
 
 // Define timing variables
