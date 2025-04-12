@@ -109,7 +109,7 @@ float vocIndex;
 uint16_t gridColor = ILI9341_GREEN;
 uint16_t backgroundColor = ILI9341_BLACK;
 uint16_t textColor = ILI9341_WHITE;
-uint16_t wifiAlertColor = ILI9341_RED;
+uint16_t alertColor = ILI9341_RED;
 uint16_t gitTextColor = ILI9341_YELLOW;
 uint16_t textColorTemperature;
 uint16_t textColorHumidity;
@@ -122,8 +122,8 @@ uint16_t textColorVoc;
 const GFXfont* mainFont = &FreeMono9pt7b;
 
 // Define WiFi credentials (add your WiFi ssid and password)
-const char* ssid1 = "";
-const char* password1 = "";
+const char* ssid1 = "TP-Link_1FAA";
+const char* password1 = "10458327";
 const char* ssid2 = "";
 const char* password2 = "";
 const char* ssid3 = "";
@@ -151,68 +151,8 @@ unsigned long lastTFTUpdateTime = 0;
 const long intervalTimeUpdate = 5000;
 const long titleTime = 3000;
 
-// Function to initialize BSEC virtual sensors
-void bsecVirtualSensor() {
-  bsec_virtual_sensor_t sensorList[10] = {
-    BSEC_OUTPUT_RAW_TEMPERATURE,
-    BSEC_OUTPUT_RAW_PRESSURE,
-    BSEC_OUTPUT_RAW_HUMIDITY,
-    BSEC_OUTPUT_RAW_GAS,
-    BSEC_OUTPUT_IAQ,
-    BSEC_OUTPUT_STATIC_IAQ,
-    BSEC_OUTPUT_CO2_EQUIVALENT,
-    BSEC_OUTPUT_BREATH_VOC_EQUIVALENT,
-    BSEC_OUTPUT_SENSOR_HEAT_COMPENSATED_TEMPERATURE,
-    BSEC_OUTPUT_SENSOR_HEAT_COMPENSATED_HUMIDITY,
-  };
-  iaqSensor.updateSubscription(sensorList, 10, BSEC_SAMPLE_RATE_LP);
-}
-
-// Function to initialize LoRa communication
-void startLora() {
-  LoRa.setPins(SS, RST, DI0);
-  if (!LoRa.begin(BAND)) {
-    Serial.println("Starting LoRa failed");
-    while (1);
-  }
-  // Adjust LoRa parameters to match transmitter settings
-  LoRa.setSpreadingFactor(SPREADING_FACTOR); // Match spreading factor with transmitter
-  LoRa.setSignalBandwidth(SIGNAL_BANDWIDTH); // Match bandwidth with transmitter
-  LoRa.setCodingRate4(CODING_RATE); // Match coding rate with transmitter
-  LoRa.setPreambleLength(PREAMBLE_LENGTH); // Match preamble length with transmitter
-  LoRa.setSyncWord(SYNC_WORD); // Set custom sync word
-
-  Serial.println("LoRa 433 MHz Receiver");
-  Serial.println("LoRa initializing OK");
-}
-
-// Function to start Blynk.Cloud connection
-void startWifi() {
-  // Array to hold SSIDs
-  const char* ssidList[] = {ssid1, ssid2, ssid3};
-  // Array to hold passwords
-  const char* passwordList[] = {password1, password2, password3};
-  int numNetworks = sizeof(ssidList) / sizeof(ssidList[0]);
-
-  // Loop through the networks
-  for (int i = 0; i < numNetworks; ++i) {
-    WiFi.begin(ssidList[i], passwordList[i]);
-    delay(2000); // Allow time to connect
-
-    if (WiFi.status() == WL_CONNECTED) {
-      Serial.print("Connected to ");
-      Serial.println(ssidList[i]);
-      Blynk.begin(auth, ssidList[i], passwordList[i]);
-      return; // Exit the loop once connected
-    }
-  }
-  // If no network is available
-  Serial.println("No WiFi connection available");
-}
-
 // Print grid TFT data
 void grid() {
-  tft.fillScreen(backgroundColor);
   tft.drawRect(0, 0, 320, 240, gridColor);
   tft.drawLine(130, 0, 130, 240, gridColor);
   tft.drawLine(225, 0, 225, 218, gridColor);
@@ -270,6 +210,7 @@ void drawCenteredText(const char *text, int y, uint16_t color, int textSize) {
 
 // Display title content
 void titleTFT() {
+  tft.setRotation(1);
   tft.setFont(mainFont);
   tft.fillScreen(ILI9341_BLACK);
   drawCenteredText("Meteo Station", 110, gridColor, 2);
@@ -280,13 +221,90 @@ void titleTFT() {
   tft.fillScreen(ILI9341_BLACK);
 }
 
-// Function to initialize TFT display
-void startTft() {
-  tft.begin();
-  tft.setRotation(1);
-  titleTFT();
-  grid();
-  titleGrid();
+// Helper function to check I2C connection
+bool bme680ConnectionCheck() {
+  Wire.beginTransmission(0x76); // Default I2C address for BME680 (0x76 or 0x77)
+  if (Wire.endTransmission() != 0) {
+    return false;
+  }
+  return true;
+}
+
+// Function to check BME680 wiring
+void startBme680(){
+  if (!bme680ConnectionCheck()) {
+    Serial.println("Failed to initialize BME680");
+    tft.setFont(mainFont);
+    drawCenteredText("Failed to initialize BME680", 120, alertColor, 1);
+    delay(titleTime);
+    tft.fillScreen(backgroundColor);
+  } else {
+    Serial.println("BME680 initializing OK");
+  }
+}
+
+// Function to initialize BSEC virtual sensors
+void bsecVirtualSensor() {
+  bsec_virtual_sensor_t sensorList[10] = {
+    BSEC_OUTPUT_RAW_TEMPERATURE,
+    BSEC_OUTPUT_RAW_PRESSURE,
+    BSEC_OUTPUT_RAW_HUMIDITY,
+    BSEC_OUTPUT_RAW_GAS,
+    BSEC_OUTPUT_IAQ,
+    BSEC_OUTPUT_STATIC_IAQ,
+    BSEC_OUTPUT_CO2_EQUIVALENT,
+    BSEC_OUTPUT_BREATH_VOC_EQUIVALENT,
+    BSEC_OUTPUT_SENSOR_HEAT_COMPENSATED_TEMPERATURE,
+    BSEC_OUTPUT_SENSOR_HEAT_COMPENSATED_HUMIDITY,
+  };
+  iaqSensor.updateSubscription(sensorList, 10, BSEC_SAMPLE_RATE_LP);
+}
+
+// Function to initialize LoRa communication
+void startLora() {
+  LoRa.setPins(SS, RST, DI0);
+  if (!LoRa.begin(BAND)) {
+    Serial.println("Failed to initialize Lora");
+    tft.setFont(mainFont);
+    drawCenteredText("Failed to initialize Lora", 120, alertColor, 1);
+    delay(titleTime);
+    tft.fillScreen(backgroundColor);
+  }
+  else {
+  // Adjust LoRa parameters to match transmitter settings
+  LoRa.setSpreadingFactor(SPREADING_FACTOR); // Match spreading factor with transmitter
+  LoRa.setSignalBandwidth(SIGNAL_BANDWIDTH); // Match bandwidth with transmitter
+  LoRa.setCodingRate4(CODING_RATE); // Match coding rate with transmitter
+  LoRa.setPreambleLength(PREAMBLE_LENGTH); // Match preamble length with transmitter
+  LoRa.setSyncWord(SYNC_WORD); // Set custom sync word
+
+  Serial.println("LoRa 433 MHz Receiver");
+  Serial.println("LoRa initializing OK");
+  }
+}
+
+// Function to start Blynk.Cloud connection
+void startWifi() {
+  // Array to hold SSIDs
+  const char* ssidList[] = {ssid1, ssid2, ssid3};
+  // Array to hold passwords
+  const char* passwordList[] = {password1, password2, password3};
+  int numNetworks = sizeof(ssidList) / sizeof(ssidList[0]);
+
+  // Loop through the networks
+  for (int i = 0; i < numNetworks; ++i) {
+    WiFi.begin(ssidList[i], passwordList[i]);
+    delay(2000); // Allow time to connect
+
+    if (WiFi.status() == WL_CONNECTED) {
+      Serial.print("Connected to ");
+      Serial.println(ssidList[i]);
+      Blynk.begin(auth, ssidList[i], passwordList[i]);
+      return; // Exit the loop once connected
+    }
+  }
+  // If no network is available
+  Serial.println("No WiFi connection available");
 }
 
 // Function to calculate dew point
@@ -342,7 +360,7 @@ void printWifiStatusToTft() {
       tft.print("WiFi");
       printLocalTimeToTft();
     } else {
-      tft.fillRect(2, 220, 127, 18, wifiAlertColor);
+      tft.fillRect(2, 220, 127, 18, alertColor);
       tft.setTextColor(textColor);
       tft.setCursor(43, 233);
       tft.print("WiFi");
@@ -858,11 +876,16 @@ void setup() {
   // Initialize serial communication
   Serial.begin(115200);
 
+  // Initialize SPI for TFT display
+  SPI.begin(SCK, MISO, MOSI, SS);
+  tft.begin();
+  titleTFT();
+
   // Initialize I2C for BME680 sensor
   Wire.begin(SDA, SCL);
 
-  // Initialize SPI for TFT display
-  SPI.begin(SCK, MISO, MOSI, SS);
+  //Failed connection alert for BME680
+  startBme680();
 
   // Initialize BME680 sensor
   iaqSensor.begin(BME680_ADDRESS, Wire);
@@ -873,14 +896,14 @@ void setup() {
   // Initialize LoRa communication
   startLora();
 
+  grid();
+  titleGrid();
+
   // Connect to one of available WiFi network and Blynk.Cloud
   startWifi();
 
   // Configure NTP server
   configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
-
-  // Start TFT display
-  startTft();
 }
 
 // Loop function
