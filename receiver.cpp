@@ -223,7 +223,7 @@ void titleTFT() {
 
 // Helper function to check I2C connection
 bool bme680ConnectionCheck() {
-  Wire.beginTransmission(0x76); // Default I2C address for BME680 (0x76 or 0x77)
+  Wire.beginTransmission(BME680_ADDRESS); // Default I2C address for BME680 (0x76 or 0x77)
   if (Wire.endTransmission() != 0) {
     return false;
   }
