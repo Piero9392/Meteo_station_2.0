@@ -591,7 +591,7 @@ void printRssiLevelToTft() {
   tft.setCursor(60, 14);
   tft.setTextColor(textColor);
   tft.print(loraRssi);
-  tft.print("dB");
+  tft.print("dBm");
 }
 
 // Function to print data from sensor Inside to Serial monitor
