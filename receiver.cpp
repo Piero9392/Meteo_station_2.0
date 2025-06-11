@@ -584,14 +584,22 @@ void printAltitudeOutToTft() {
 
 void printRssiLevelToTft() {
   int loraRssi = LoRa.packetRssi();
+  int loraSnr = LoRa.packetSnr();
   tft.fillRect(1, 1, 129, 19, backgroundColor);
-  tft.setCursor(5, 14);
+  tft.setFont(NULL);
   tft.setTextColor(gridColor);
-  tft.print("RSSI");
-  tft.setCursor(60, 14);
+  tft.setCursor(5, 7);
+  tft.print("RSSI:");
   tft.setTextColor(textColor);
   tft.print(loraRssi);
   tft.print("dBm");
+  tft.setTextColor(gridColor);
+  tft.print(" ");
+  tft.print("SNR:");
+  tft.setTextColor(textColor);
+  tft.print(loraSnr);
+  tft.print("dB");
+  tft.setFont(mainFont);
 }
 
 // Function to print data from sensor Inside to Serial monitor
