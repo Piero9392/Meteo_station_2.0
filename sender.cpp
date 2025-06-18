@@ -33,7 +33,7 @@ GND:   Ground
 #define BAND 433E6
 #define SPREADING_FACTOR 12 // Match spreading factor with transmitter
 #define SIGNAL_BANDWIDTH 125E3 // Match bandwidth with transmitter
-#define CODING_RATE 5 // Match coding rate with transmitter
+#define CODING_RATE 8 // Match coding rate with transmitter
 #define PREAMBLE_LENGTH 8 // Match preamble length with transmitter
 #define SYNC_WORD 0x6E // Set custom sync word
 #define TX_POWER 20 // Set maximum transmission power in dBm (Ra-02 supports up to 20dBm)
@@ -48,7 +48,7 @@ Bsec iaqSensor; // BME680 sensor object
 String LoRaMessage = ""; // String to store LoRa message
 
 unsigned long previousMillis = 0;
-const long intervalDataSend = 1000;
+const long intervalDataSend = 5000;
 
 // Function to initialize BSEC virtual sensors
 void bsecVirtualSensor() {
