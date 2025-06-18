@@ -173,19 +173,8 @@ void grid() {
 // Print grid TFT titles
 void titleGrid() {
   tft.setFont(mainFont);
-  tft.setTextColor(backgroundColor);
+  tft.setTextColor(gridColor);
   tft.setTextSize(1);
-  tft.fillRect(132, 2, 92, 17, gridColor);
-  tft.fillRect(227, 2, 91, 17, gridColor);
-  tft.fillRect(2, 22, 127, 19, gridColor);
-  tft.fillRect(2, 44, 127, 19, gridColor);
-  tft.fillRect(2, 66, 127, 19, gridColor);
-  tft.fillRect(2, 88, 127, 19, gridColor);
-  tft.fillRect(2, 110, 127, 19, gridColor);
-  tft.fillRect(2, 132, 127, 19, gridColor);
-  tft.fillRect(2, 154, 127, 19, gridColor);
-  tft.fillRect(2, 176, 127, 19, gridColor);
-  tft.fillRect(2, 198, 127, 19, gridColor);
   tft.setCursor(152, 15);
   tft.println("Inside");
   tft.setCursor(237, 15);
@@ -196,7 +185,7 @@ void titleGrid() {
   tft.print("Humidity");
   tft.setCursor(8, 80);
   tft.print("Pressure");
-  tft.setCursor (8, 102);
+  tft.setCursor(8, 102);
   tft.print("Dew Point");
   tft.setCursor(8, 124);
   tft.print("Gas");
@@ -354,8 +343,8 @@ void printLocalTimeToTft() {
   String currentTime = String(timeString);
   // Only update the display if the time has changed
   if (currentTime != lastTime) {
-    tft.fillRect(132, 220, 186, 18, gridColor);  // Clear only when needed
-    tft.setTextColor(backgroundColor);
+    tft.fillRect(132, 220, 186, 18, backgroundColor);  // Clear only when needed
+    tft.setTextColor(textColor);
     tft.setCursor(153, 234);
     tft.print(currentTime);
     lastTime = currentTime;  // Update last stored time
@@ -371,7 +360,7 @@ void printWifiStatusToTft() {
     lastTFTUpdateTime = currentMillis;
     if (WiFi.status() == WL_CONNECTED) {
       tft.fillRect(2, 220, 127, 18, gridColor);
-      tft.setTextColor(ILI9341_BLUE);
+      tft.setTextColor(backgroundColor);
       tft.setFont(NULL);
       String wifiRssiMsg = "WiFi RSSI" + String(wifiRssi) + "dBm";
       // Estimate string width: 6 pixels per character
@@ -646,7 +635,7 @@ void printRssiSnrLevelToTft() {
   int loraSnr = LoRa.packetSnr();
   tft.fillRect(2, 2, 127, 17, gridColor);
   tft.setFont(NULL);  // default font, approx 6x8 px per char
-  tft.setTextColor(ILI9341_BLUE);
+  tft.setTextColor(backgroundColor);
   String loraRssiMsg = "RSSI" + String(loraRssi) + "dBm SNR" + String(loraSnr) + "dB";
   int textWidth = loraRssiMsg.length() * 6;
   int rectX = 2;
