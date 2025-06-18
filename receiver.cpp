@@ -20,7 +20,6 @@ DIO0:  GPIO 2
 VCC:   +3.3V
 GND:   Ground
 
-
 BME680 sensor wiring:
 SDA:   GPIO 21
 SCL:   GPIO 22
@@ -32,7 +31,7 @@ GND:   Ground
 #include "bsec.h"
 #include <Adafruit_GFX.h>
 #include <Adafruit_ILI9341.h>
-#include <Fonts/FreeMono9pt7b.h>
+#include <Fonts/FreeSansBold9pt7b.h>
 #include <SPI.h>
 #include <LoRa.h>
 #include <WiFi.h>
@@ -61,9 +60,10 @@ GND:   Ground
 #define BAND 433E6
 #define SPREADING_FACTOR 12 // Match spreading factor with transmitter
 #define SIGNAL_BANDWIDTH 125E3 // Match bandwidth with transmitter
-#define CODING_RATE 5 // Match coding rate with transmitter
+#define CODING_RATE 8 // Match coding rate with transmitter
 #define PREAMBLE_LENGTH 8 // Match preamble length with transmitter
 #define SYNC_WORD 0x6E // Set custom sync word
+#define TX_POWER 20 // Set maximum transmission power in dBm (Ra-02 supports up to 20dBm)
 
 // Pin configurations for BME680
 #define SDA 21
@@ -119,13 +119,13 @@ uint16_t textColorCo2;
 uint16_t textColorVoc;
 
 // Define font for TFT display
-const GFXfont* mainFont = &FreeMono9pt7b;
+const GFXfont* mainFont = &FreeSansBold9pt7b;
 
 // Define WiFi credentials (add your WiFi ssid and password)
 const char* ssid1 = "TP-Link_1FAA";
 const char* password1 = "10458327";
-const char* ssid2 = "";
-const char* password2 = "";
+const char* ssid2 = "UA Guest";
+const char* password2 = "ai4democracies";
 const char* ssid3 = "";
 const char* password3 = "";
 
@@ -151,6 +151,8 @@ unsigned long lastTFTUpdateTime = 0;
 const long intervalTimeUpdate = 5000;
 const long titleTime = 3000;
 
+bool loraTimeoutDisplayed = false;
+
 // Print grid TFT data
 void grid() {
   tft.drawRect(0, 0, 320, 240, gridColor);
@@ -171,29 +173,40 @@ void grid() {
 // Print grid TFT titles
 void titleGrid() {
   tft.setFont(mainFont);
-  tft.setTextColor(gridColor);
+  tft.setTextColor(backgroundColor);
   tft.setTextSize(1);
-  tft.setCursor(145, 14);
+  tft.fillRect(132, 2, 92, 17, gridColor);
+  tft.fillRect(227, 2, 91, 17, gridColor);
+  tft.fillRect(2, 22, 127, 19, gridColor);
+  tft.fillRect(2, 44, 127, 19, gridColor);
+  tft.fillRect(2, 66, 127, 19, gridColor);
+  tft.fillRect(2, 88, 127, 19, gridColor);
+  tft.fillRect(2, 110, 127, 19, gridColor);
+  tft.fillRect(2, 132, 127, 19, gridColor);
+  tft.fillRect(2, 154, 127, 19, gridColor);
+  tft.fillRect(2, 176, 127, 19, gridColor);
+  tft.fillRect(2, 198, 127, 19, gridColor);
+  tft.setCursor(152, 15);
   tft.println("Inside");
-  tft.setCursor(234, 14);
+  tft.setCursor(237, 15);
   tft.println("Outside");
-  tft.setCursor(5, 36);
+  tft.setCursor(8, 36);
   tft.print("Temperature");
-  tft.setCursor(5, 58);
+  tft.setCursor(8, 58);
   tft.print("Humidity");
-  tft.setCursor(5, 80);
+  tft.setCursor(8, 80);
   tft.print("Pressure");
-  tft.setCursor(5, 102);
+  tft.setCursor (8, 102);
   tft.print("Dew Point");
-  tft.setCursor(5, 124);
+  tft.setCursor(8, 124);
   tft.print("Gas");
-  tft.setCursor(5, 146);
+  tft.setCursor(8, 146);
   tft.print("IAQ");
-  tft.setCursor(5, 168);
+  tft.setCursor(8, 168);
   tft.print("CO2");
-  tft.setCursor(5, 190);
+  tft.setCursor(8, 190);
   tft.print("VOC");
-  tft.setCursor(5, 212);
+  tft.setCursor(8, 212);
   tft.print("Altitude");
 }
 
@@ -214,7 +227,7 @@ void titleTFT() {
   tft.setFont(mainFont);
   tft.fillScreen(ILI9341_BLACK);
   drawCenteredText("Meteo Station", 110, gridColor, 2);
-  drawCenteredText("ESP32/BME680/LoRa433MHz", 140, textColor, 1);
+  drawCenteredText("ESP32 / BME680 / LoRa 433MHz", 140, textColor, 1);
   tft.setFont();
   drawCenteredText("github.com/Piero9392/Meteo_station_2.0", 220, gitTextColor, 1);
   delay(titleTime);
@@ -277,6 +290,7 @@ void startLora() {
   LoRa.setCodingRate4(CODING_RATE); // Match coding rate with transmitter
   LoRa.setPreambleLength(PREAMBLE_LENGTH); // Match preamble length with transmitter
   LoRa.setSyncWord(SYNC_WORD); // Set custom sync word
+  LoRa.setTxPower(TX_POWER, PA_OUTPUT_PA_BOOST_PIN); // Set maximum transmission power in dBm (Ra-02 supports up to 20dBm). Set transmission power mode
 
   Serial.println("LoRa 433 MHz Receiver");
   Serial.println("LoRa initializing OK");
@@ -336,12 +350,13 @@ void printLocalTimeToTft() {
   getLocalTime(&timeinfo);
   // Format current time as a string
   char timeString[20];
-  snprintf(timeString, sizeof(timeString), " %02d:%02d %02d/%02d/%02d ", timeinfo.tm_hour, timeinfo.tm_min, timeinfo.tm_mday, timeinfo.tm_mon + 1, timeinfo.tm_year % 100);
+  snprintf(timeString, sizeof(timeString), "%02d:%02d %02d/%02d/%04d", timeinfo.tm_hour, timeinfo.tm_min, timeinfo.tm_mday, timeinfo.tm_mon + 1, timeinfo.tm_year + 1900);
   String currentTime = String(timeString);
   // Only update the display if the time has changed
   if (currentTime != lastTime) {
-    tft.fillRect(131, 219, 188, 20, backgroundColor);  // Clear only when needed
-    tft.setCursor(135, 233);
+    tft.fillRect(132, 220, 186, 18, gridColor);  // Clear only when needed
+    tft.setTextColor(backgroundColor);
+    tft.setCursor(153, 234);
     tft.print(currentTime);
     lastTime = currentTime;  // Update last stored time
   }
@@ -350,21 +365,33 @@ void printLocalTimeToTft() {
 
 // Function to print TFT WiFi status
 void printWifiStatusToTft() {
+  long wifiRssi = WiFi.RSSI();  // dBm
   unsigned long currentMillis = millis();
   if (currentMillis - lastTFTUpdateTime >= intervalTimeUpdate) {
     lastTFTUpdateTime = currentMillis;
     if (WiFi.status() == WL_CONNECTED) {
       tft.fillRect(2, 220, 127, 18, gridColor);
-      tft.setTextColor(textColor);
-      tft.setCursor(43, 233);
-      tft.print("WiFi");
+      tft.setTextColor(ILI9341_BLUE);
+      tft.setFont(NULL);
+      String wifiRssiMsg = "WiFi RSSI" + String(wifiRssi) + "dBm";
+      // Estimate string width: 6 pixels per character
+      int textWidth = wifiRssiMsg.length() * 6;
+      int rectX = 2;
+      int rectY = 220;
+      int rectW = 127;
+      int rectH = 18;
+      int centerX = rectX + (rectW - textWidth) / 2;
+      int centerY = rectY + (rectH - 8) / 2;  // 8px is text height in default font
+      tft.setCursor(centerX, centerY + 1);  // small Y offset for nicer centering
+      tft.print(wifiRssiMsg);
+      tft.setFont(mainFont);
       printLocalTimeToTft();
     } else {
       tft.fillRect(2, 220, 127, 18, alertColor);
       tft.setTextColor(textColor);
-      tft.setCursor(43, 233);
+      tft.setCursor(43, 235);
       tft.print("WiFi");
-      tft.fillRect(131, 219, 188, 20, backgroundColor);
+      tft.fillRect(132, 220, 186, 18, gridColor);
     }
   }
 }
@@ -434,7 +461,9 @@ void printTemperatureInToTft() {
   tft.setCursor(135, 36);
   tft.setTextColor(textColorTemperature);
   tft.print(temperatureIn);
-  tft.print("C");
+  tft.setFont(NULL);
+  tft.print(" C");
+  tft.setFont(mainFont);
 }
 
 void printHumidityInToTft() {
@@ -443,7 +472,9 @@ void printHumidityInToTft() {
   tft.setCursor(135, 58);
   tft.setTextColor(textColorHumidity);
   tft.print(humidityIn);
-  tft.print("%");
+  tft.setFont(NULL);
+  tft.print(" %");
+  tft.setFont(mainFont);
 }
 
 void printPressureInToTft() {
@@ -452,7 +483,9 @@ void printPressureInToTft() {
   tft.setCursor(135, 80);
   tft.setTextColor(textColorPressure);
   tft.print(pressureIn);
-  tft.print("hPa");
+  tft.setFont(NULL);
+  tft.print(" hPa");
+  tft.setFont(mainFont);
 }
 
 void printDewPointInToTft() {
@@ -463,7 +496,9 @@ void printDewPointInToTft() {
   tft.setCursor(135, 102);
   tft.setTextColor(textColor);
   tft.print(dewPointIn);
-  tft.print("C");
+  tft.setFont(NULL);
+  tft.print(" C");
+  tft.setFont(mainFont);
 }
 
 void printGasInToTft() {
@@ -472,7 +507,9 @@ void printGasInToTft() {
   tft.setCursor(135, 124);
   tft.setTextColor(textColor);
   tft.print(gasIn);
-  tft.print("kOhm");
+  tft.setFont(NULL);
+  tft.print(" kOhm");
+  tft.setFont(mainFont);
 }
 
 void printIaqInToTft() {
@@ -489,7 +526,9 @@ void printCo2InToTft() {
   tft.setCursor(135, 168);
   tft.setTextColor(textColorCo2);
   tft.print(co2In);
-  tft.print("ppm");
+  tft.setFont(NULL);
+  tft.print(" ppm");
+  tft.setFont(mainFont);
 }
 
 void printVocInToTft() {
@@ -498,7 +537,9 @@ void printVocInToTft() {
   tft.setCursor(135, 190);
   tft.setTextColor(textColorVoc);
   tft.print(vocIn);
-  tft.print("ppm");
+  tft.setFont(NULL);
+  tft.print(" ppm");
+  tft.setFont(mainFont);
 }
 
 void printAltitudeInToTft() {
@@ -508,7 +549,9 @@ void printAltitudeInToTft() {
   tft.setCursor(135, 212);
   tft.setTextColor(textColor);
   tft.print(altitudeIn);
-  tft.print("m");
+  tft.setFont(NULL);
+  tft.print(" m");
+  tft.setFont(mainFont);
 }
 
 void printTemperatureOutToTft() {
@@ -516,7 +559,9 @@ void printTemperatureOutToTft() {
   tft.setCursor(230, 36);
   tft.setTextColor(textColorTemperature);
   tft.print(temperatureOut);
-  tft.print("C");
+  tft.setFont(NULL);
+  tft.print(" C");
+  tft.setFont(mainFont);
 }
 
 void printHumidityOutToTft() {
@@ -524,7 +569,9 @@ void printHumidityOutToTft() {
   tft.setCursor(230, 58);
   tft.setTextColor(textColorHumidity);
   tft.print(humidityOut);
-  tft.print("%");
+  tft.setFont(NULL);
+  tft.print(" %");
+  tft.setFont(mainFont);
 }
 
 void printPressureOutToTft() {
@@ -532,30 +579,36 @@ void printPressureOutToTft() {
   tft.setCursor(230, 80);
   tft.setTextColor(textColorPressure);
   tft.print(pressureOut);
-  tft.print("hPa");
+  tft.setFont(NULL);
+  tft.print(" hPa");
+  tft.setFont(mainFont);
 }
 
 void printDewPointOutToTft() {
-    tft.fillRect(226, 88, 93, 20, backgroundColor);
-    tft.setCursor(230, 102);
-    tft.setTextColor(textColor);
-    tft.print(dewPointOut);
-    tft.print("C");
+  tft.fillRect(226, 88, 93, 20, backgroundColor);
+  tft.setCursor(230, 102);
+  tft.setTextColor(textColor);
+  tft.print(dewPointOut);
+  tft.setFont(NULL);
+  tft.print(" C");
+  tft.setFont(mainFont);
 }
 
 void printGasOutToTft() {
-    tft.fillRect(226, 110, 93, 20, backgroundColor);
-    tft.setCursor(230, 124);
-    tft.setTextColor(textColor);
-    tft.print(gasOut);
-    tft.print("kOhm");
+  tft.fillRect(226, 110, 93, 20, backgroundColor);
+  tft.setCursor(230, 124);
+  tft.setTextColor(textColor);
+  tft.print(gasOut);
+  tft.setFont(NULL);
+  tft.print(" kOhm");
+  tft.setFont(mainFont);
 }
 
 void printIaqOutToTft() {
-    tft.fillRect(226, 132, 93, 20, backgroundColor);
-    tft.setCursor(230, 146);
-    tft.setTextColor(textColorIaq);
-    tft.print(iaqOut);
+  tft.fillRect(226, 132, 93, 20, backgroundColor);
+  tft.setCursor(230, 146);
+  tft.setTextColor(textColorIaq);
+  tft.print(iaqOut);
 }
 
 void printCo2OutToTft() {
@@ -563,7 +616,9 @@ void printCo2OutToTft() {
   tft.setCursor(230, 168);
   tft.setTextColor(textColorCo2);
   tft.print(co2Out);
-  tft.print("ppm");
+  tft.setFont(NULL);
+  tft.print(" ppm");
+  tft.setFont(mainFont);
 }
 
 void printVocOutToTft() {
@@ -571,7 +626,9 @@ void printVocOutToTft() {
   tft.setCursor(230, 190);
   tft.setTextColor(textColorVoc);
   tft.print(vocOut);
-  tft.print("ppm");
+  tft.setFont(NULL);
+  tft.print(" ppm");
+  tft.setFont(mainFont);
 }
 
 void printAltitudeOutToTft() {
@@ -579,26 +636,27 @@ void printAltitudeOutToTft() {
   tft.setCursor(230, 212);
   tft.setTextColor(textColor);
   tft.print(altitudeOut);
-  tft.print("m");
+  tft.setFont(NULL);
+  tft.print(" m");
+  tft.setFont(mainFont);
 }
 
-void printRssiLevelToTft() {
+void printRssiSnrLevelToTft() {
   int loraRssi = LoRa.packetRssi();
   int loraSnr = LoRa.packetSnr();
-  tft.fillRect(1, 1, 129, 19, backgroundColor);
-  tft.setFont(NULL);
-  tft.setTextColor(gridColor);
-  tft.setCursor(5, 7);
-  tft.print("RSSI:");
-  tft.setTextColor(textColor);
-  tft.print(loraRssi);
-  tft.print("dBm");
-  tft.setTextColor(gridColor);
-  tft.print(" ");
-  tft.print("SNR:");
-  tft.setTextColor(textColor);
-  tft.print(loraSnr);
-  tft.print("dB");
+  tft.fillRect(2, 2, 127, 17, gridColor);
+  tft.setFont(NULL);  // default font, approx 6x8 px per char
+  tft.setTextColor(ILI9341_BLUE);
+  String loraRssiMsg = "RSSI" + String(loraRssi) + "dBm SNR" + String(loraSnr) + "dB";
+  int textWidth = loraRssiMsg.length() * 6;
+  int rectX = 2;
+  int rectY = 2;
+  int rectW = 127;
+  int rectH = 17;
+  int centerX = rectX + (rectW - textWidth) / 2;
+  int centerY = rectY + (rectH - 8) / 2;  // 8px is text height in default font
+  tft.setCursor(centerX, centerY + 1);  // small Y offset for nicer centering
+  tft.print(loraRssiMsg);
   tft.setFont(mainFont);
 }
 
@@ -693,7 +751,10 @@ void clearTftIfNoDataSensorOut() {
   tft.fillRect(226, 154, 93, 20, backgroundColor);
   tft.fillRect(226, 176, 93, 20, backgroundColor);
   tft.fillRect(226, 198, 93, 20, backgroundColor);
-  tft.fillRect(1, 1, 129, 19, backgroundColor);
+  tft.fillRect(2, 2, 127, 17, alertColor);
+  tft.setTextColor(textColor);
+  tft.setCursor(43, 16);
+  tft.print("LoRa");
 }
 
 void temperatureCondition() {
@@ -805,9 +866,10 @@ void sensorInData() {
 void sensorOutData() {
   unsigned long currentMillis = millis();
   int pos1, pos2, pos3, pos4, pos5, pos6, pos7, pos8, pos9;
-  int packetSize = LoRa.parsePacket();
+  int packetSize = LoRa.parsePacket();  
   if (packetSize) {
     previousMillis = currentMillis;
+    loraTimeoutDisplayed = false; // reset flag on new data
     String LoRaData = LoRa.readString();
     while (LoRa.available()) {
       Serial.print((char)LoRa.read());
@@ -866,16 +928,18 @@ void sensorOutData() {
     printCo2OutToTft();
     printVocOutToTft();
     printAltitudeOutToTft();
-    printRssiLevelToTft();
+    printRssiSnrLevelToTft();
 
     printSensorOutDataToSerial();
 
     sendSensorOutDataToBlynkCloud();
 
     sendSensorOutDataToThingspeak();
-  }
-  if (currentMillis - previousMillis >= receiveTimeout) {
-    clearTftIfNoDataSensorOut();
+  } else {// No packet received
+    if (!loraTimeoutDisplayed && currentMillis - previousMillis >= receiveTimeout) {
+      clearTftIfNoDataSensorOut();
+      loraTimeoutDisplayed = true;  // set flag to avoid repeated redraw
+    }
   }
 }
 
